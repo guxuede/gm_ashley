@@ -52,7 +52,7 @@ public class CollisionSystem extends EntitySystem {
 	private Engine engine;
 	private World world;
 	private CollisionListener listener;
-	private Random rand = new Random();
+	private Random rand = new Random(1234567L);
 	private ImmutableArray<Entity> bobs;
 	private ImmutableArray<Entity> coins;
 	private ImmutableArray<Entity> squirrels;

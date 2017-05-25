@@ -49,6 +49,6 @@ public class CameraSystem extends IteratingSystem {
 			return;
 		}
 		
-		cam.camera.position.y = Math.max(cam.camera.position.y, target.pos.y);
+		cam.camera.position.y = target.pos.y;
 	}
 }

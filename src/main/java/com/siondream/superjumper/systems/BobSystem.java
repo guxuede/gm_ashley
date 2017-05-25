@@ -32,7 +32,6 @@ public class BobSystem extends IteratingSystem {
 													   TransformComponent.class,
 													   MovementComponent.class).get();
 	
-	private float accelX = 0.0f;
 	private World world;
 	
 	private ComponentMapper<BobComponent> bm;
@@ -50,16 +49,10 @@ public class BobSystem extends IteratingSystem {
 		tm = ComponentMapper.getFor(TransformComponent.class);
 		mm = ComponentMapper.getFor(MovementComponent.class);
 	}
-	
-	public void setAccelX(float accelX) {
-		this.accelX = accelX;
-	}
-	
+
 	@Override
 	public void update(float deltaTime) {
 		super.update(deltaTime);
-		
-		accelX = 0.0f;
 	}
 	
 	@Override
@@ -74,7 +67,7 @@ public class BobSystem extends IteratingSystem {
 		}
 		
 		if (state.get() != BobComponent.STATE_HIT) {
-			mov.velocity.x = -accelX / 10.0f * BobComponent.MOVE_VELOCITY;
+			mov.velocity.x = -mov.accelX / 10.0f * BobComponent.MOVE_VELOCITY;
 		}
 		
 		if (mov.velocity.y > 0 && state.get() != BobComponent.STATE_HIT) {
@@ -100,10 +93,10 @@ public class BobSystem extends IteratingSystem {
 		t.scale.x = mov.velocity.x < 0.0f ? Math.abs(t.scale.x) * -1.0f : Math.abs(t.scale.x);
 		
 		bob.heightSoFar = Math.max(t.pos.y, bob.heightSoFar);
-		
-		if (bob.heightSoFar - 7.5f > t.pos.y) {
-			world.state = World.WORLD_STATE_GAME_OVER;
-		}
+//
+//		if (bob.heightSoFar - 7.5f > t.pos.y) {
+//			world.state = World.WORLD_STATE_GAME_OVER;
+//		}
 	}
 	
 	public void hitSquirrel (Entity entity) {

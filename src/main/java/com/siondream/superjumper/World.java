@@ -21,6 +21,7 @@ import java.util.Random;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.PooledEngine;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.RandomXS128;
 import com.badlogic.gdx.math.Vector2;
 import com.siondream.superjumper.components.AnimationComponent;
 import com.siondream.superjumper.components.BackgroundComponent;
@@ -57,12 +58,13 @@ public class World {
 
 	public World (PooledEngine engine) {
 		this.engine = engine;
-		this.rand = new Random();
-	}
+        this.rand = new Random(1234567L);
+        MathUtils.random = new RandomXS128(1234567L,1234567L);
+    }
 	
 	public void create() {
-        Entity bob1 = createBob(0);
-		Entity bob = createBob(10);
+        Entity bob1 = createBob(0,0);
+		Entity bob = createBob(1,0);
 		createCamera(bob);
 		createBackground();
 		generateLevel();
@@ -100,11 +102,12 @@ public class World {
 		createCastle(WORLD_WIDTH / 2, y);
 	}
 	
-	private Entity createBob(int x) {
+	private Entity createBob(int playerId,int x) {
 		Entity entity = engine.createEntity();
 
 		AnimationComponent animation = engine.createComponent(AnimationComponent.class);
 		BobComponent bob = engine.createComponent(BobComponent.class);
+        bob.playId = playerId;
 		BoundsComponent bounds = engine.createComponent(BoundsComponent.class);
 		GravityComponent gravity = engine.createComponent(GravityComponent.class);
 		MovementComponent movement = engine.createComponent(MovementComponent.class);

@@ -16,6 +16,7 @@
 
 package com.siondream.superjumper;
 
+import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.PooledEngine;
 import com.badlogic.gdx.Application.ApplicationType;
 import com.badlogic.gdx.Gdx;
@@ -25,6 +26,8 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
+import com.siondream.superjumper.components.BobComponent;
+import com.siondream.superjumper.components.MovementComponent;
 import com.siondream.superjumper.systems.AnimationSystem;
 import com.siondream.superjumper.systems.BackgroundSystem;
 import com.siondream.superjumper.systems.BobSystem;
@@ -38,6 +41,8 @@ import com.siondream.superjumper.systems.PlatformSystem;
 import com.siondream.superjumper.systems.RenderingSystem;
 import com.siondream.superjumper.systems.SquirrelSystem;
 import com.siondream.superjumper.systems.StateSystem;
+
+import java.util.Iterator;
 
 public class GameScreen extends ScreenAdapter {
 	static final int GAME_READY = 0;
@@ -61,7 +66,7 @@ public class GameScreen extends ScreenAdapter {
 	PooledEngine engine;
 	private GlyphLayout layout = new GlyphLayout();
 	
-	private int state;
+	public int state;
 
 	public GameScreen (SuperJumper game) {
 		this.game = game;
@@ -176,10 +181,12 @@ public class GameScreen extends ScreenAdapter {
 			if (Gdx.input.isKeyPressed(Keys.DPAD_LEFT)) accelX = 5f;
 			if (Gdx.input.isKeyPressed(Keys.DPAD_RIGHT)) accelX = -5f;
 		}
-		
-		engine.getSystem(BobSystem.class).setAccelX(accelX);
-		
-		if (world.score != lastScore) {
+
+        Iterator<Entity> iterator = engine.getSystem(BobSystem.class).getEntities().iterator();
+        while(iterator.hasNext()){
+            iterator.next().getComponent(MovementComponent.class).accelX = accelX;
+        }
+        if (world.score != lastScore) {
 			lastScore = world.score;
 			scoreString = "SCORE: " + lastScore;
 		}

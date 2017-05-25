@@ -28,4 +28,5 @@ public class BobComponent implements Component {
 	public static final float HEIGHT = 0.8f;
 	
 	public float heightSoFar = 0.0f;
+    public int playId = 0;
 }
