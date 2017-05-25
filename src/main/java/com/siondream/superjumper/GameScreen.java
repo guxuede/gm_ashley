@@ -28,6 +28,8 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.siondream.superjumper.components.BobComponent;
 import com.siondream.superjumper.components.MovementComponent;
+import com.siondream.superjumper.net.NetOptQueen;
+import com.siondream.superjumper.net.SecureChatClient;
 import com.siondream.superjumper.systems.AnimationSystem;
 import com.siondream.superjumper.systems.BackgroundSystem;
 import com.siondream.superjumper.systems.BobSystem;
@@ -42,7 +44,8 @@ import com.siondream.superjumper.systems.RenderingSystem;
 import com.siondream.superjumper.systems.SquirrelSystem;
 import com.siondream.superjumper.systems.StateSystem;
 
-import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class GameScreen extends ScreenAdapter {
 	static final int GAME_READY = 0;
@@ -67,6 +70,8 @@ public class GameScreen extends ScreenAdapter {
 	private GlyphLayout layout = new GlyphLayout();
 	
 	public int state;
+
+    private int playerId = 1;
 
 	public GameScreen (SuperJumper game) {
 		this.game = game;
@@ -113,25 +118,22 @@ public class GameScreen extends ScreenAdapter {
 		engine.addSystem(new AnimationSystem());
 		engine.addSystem(new CollisionSystem(world, collisionListener));
 		engine.addSystem(new RenderingSystem(game.batcher));
-		
+
 		engine.getSystem(BackgroundSystem.class).setCamera(engine.getSystem(RenderingSystem.class).getCamera());
-		
+
 		world.create();
-		
+
 		pauseBounds = new Rectangle(320 - 64, 480 - 64, 64, 64);
 		resumeBounds = new Rectangle(160 - 96, 240, 192, 36);
 		quitBounds = new Rectangle(160 - 96, 240 - 36, 192, 36);
 		lastScore = 0;
 		scoreString = "SCORE: 0";
-		
+
 		pauseSystems();
+        new SecureChatClient(this).start();
 	}
 
-	public void update (float deltaTime) {
-		if (deltaTime > 0.1f) deltaTime = 0.1f;
-
-		engine.update(deltaTime);
-		
+	public void updateUI(float deltaTime) {
 		switch (state) {
 		case GAME_READY:
 			updateReady();
@@ -169,24 +171,7 @@ public class GameScreen extends ScreenAdapter {
 				return;
 			}
 		}
-		
-		ApplicationType appType = Gdx.app.getType();
-		
-		// should work also with Gdx.input.isPeripheralAvailable(Peripheral.Accelerometer)
-		float accelX = 0.0f;
-		
-		if (appType == ApplicationType.Android || appType == ApplicationType.iOS) {
-			accelX = Gdx.input.getAccelerometerX();
-		} else {
-			if (Gdx.input.isKeyPressed(Keys.DPAD_LEFT)) accelX = 5f;
-			if (Gdx.input.isKeyPressed(Keys.DPAD_RIGHT)) accelX = -5f;
-		}
-
-        Iterator<Entity> iterator = engine.getSystem(BobSystem.class).getEntities().iterator();
-        while(iterator.hasNext()){
-            iterator.next().getComponent(MovementComponent.class).accelX = accelX;
-        }
-        if (world.score != lastScore) {
+		if (world.score != lastScore) {
 			lastScore = world.score;
 			scoreString = "SCORE: " + lastScore;
 		}
@@ -218,6 +203,7 @@ public class GameScreen extends ScreenAdapter {
 
 			if (quitBounds.contains(touchPoint.x, touchPoint.y)) {
 				Assets.playSound(Assets.clickSound);
+                state = -1;
 				game.setScreen(new MainMenuScreen(game));
 				return;
 			}
@@ -235,6 +221,7 @@ public class GameScreen extends ScreenAdapter {
 
 	private void updateGameOver () {
 		if (Gdx.input.justTouched()) {
+            state = -1;
 			game.setScreen(new MainMenuScreen(game));
 		}
 	}
@@ -322,17 +309,128 @@ public class GameScreen extends ScreenAdapter {
 		engine.getSystem(CollisionSystem.class).setProcessing(true);
 	}
 
-	@Override
-	public void render (float delta) {
-		update(delta);
-		drawUI();
-	}
+//    private double accumulator;
+//    private double currentTime;
+//    private float step =10.0f /60.0f;
+//    @Override
+//	public void render (float delta) {
+//        if ( delta > 0.25f ) delta = 0.25f;	  // note: max frame time to avoid spiral of death
+//        double newTime = TimeUtils.millis() /1000.0;
+//        double frameTime = Math.min(newTime - currentTime,0.25);
+//        float deltaTime = (float)frameTime;
+//        currentTime = newTime;
+//        accumulator += frameTime;
+//        engine.getSystem(RenderingSystem.class).setProcessing(false);
+//        while (accumulator >= step) {
+//            accumulator -= step;
+//            engine.update(deltaTime);
+//        }
+//        engine.getSystem(RenderingSystem.class).setProcessing(true);
+//        engine.update(deltaTime);
+//        updateUI(deltaTime);
+//        drawUI();
+//    }
 
-	@Override
+
+
+    private final float TIME_STEP = 0.0133f;	// logic updates approx. @ 75 hz
+    float accumulator = 0.0f;
+    @Override
+    public void render(float delta) {
+        if ( delta > 0.25f ) delta = 0.25f;	  // note: max frame time to avoid spiral of death
+        accumulator += delta;
+        engine.getSystem(RenderingSystem.class).setProcessing(false);
+        while (accumulator >= TIME_STEP) {
+            updateLogic();
+            accumulator -= TIME_STEP;
+        }
+        pauseSystems();
+        engine.getSystem(RenderingSystem.class).setProcessing(true);
+        engine.update(delta);
+        resumeSystems();
+
+        updateUI(delta);
+        drawUI();
+    }
+    /**
+     * 查看命令队列，如果不为空
+     *      得到当前logicUpdateCount之前的命令，
+     *      得到現在命令隊列中所有logicUpdateCount的命令。
+     * 如果有則執行
+     * 没有则等待
+     */
+    private long updateCount =0;
+    private long logicUpdated = 0;
+    private void updateLogic(){
+        if(updateCount % 20 == 0){
+            System.out.println("process net:"+ updateCount+","+logicUpdated);
+            {//BeforeFrameOpt
+                Map<Long, List<NetOptQueen.NetOpt>> optsMap = NetOptQueen.readAllAfterFrameOpt(logicUpdated);
+                if(!optsMap.isEmpty()){
+                    for (Long frameIndex : optsMap.keySet()) {
+                        fastUpdate(optsMap, frameIndex);
+//                        while(logicUpdated < frameIndex){
+//                            logicUpdated++;
+//                            engine.update(TIME_STEP);
+//                        }
+                    }
+                    logicUpdated++;
+                    processKeyEvent();
+                }else{
+                    System.out.println("wait server response");
+                    return;
+                }
+            }
+        }
+        engine.update(TIME_STEP);
+        updateCount ++ ;
+    }
+
+    private void fastUpdate(Map<Long, List<NetOptQueen.NetOpt>> optsMap, Long frameIndex) {
+        for(NetOptQueen.NetOpt opt:optsMap.get(frameIndex)){
+            for (Entity entity : engine.getSystem(BobSystem.class).getEntities()) {
+                if (opt.playerId == entity.getComponent(BobComponent.class).playId) {
+                    entity.getComponent(MovementComponent.class).accelX = opt.x;
+                    break;
+                }
+            }
+        }
+    }
+
+    private void processKeyEvent(){
+        ApplicationType appType = Gdx.app.getType();
+        // should work also with Gdx.input.isPeripheralAvailable(Peripheral.Accelerometer)
+        Entity entity = getEntityByPlayId(playerId);
+        MovementComponent movementComponent = entity.getComponent(MovementComponent.class);
+        float accelX;
+        if (appType == ApplicationType.Android || appType == ApplicationType.iOS) {
+            accelX = Gdx.input.getAccelerometerX();
+        } else {
+            if (Gdx.input.isKeyPressed(Keys.DPAD_LEFT)){
+                accelX = 5f;
+            }else if (Gdx.input.isKeyPressed(Keys.DPAD_RIGHT)){
+                accelX = -5f;
+            }else{
+                accelX = 0;
+            }
+        }
+        NetOptQueen.addOpt(playerId, logicUpdated,accelX);
+    }
+
+    private Entity getEntityByPlayId(int playerId){
+        for (Entity entity : engine.getSystem(BobSystem.class).getEntities()) {
+            if (playerId== entity.getComponent(BobComponent.class).playId) {
+                return entity;
+            }
+        }
+        return null;
+    }
+
+    @Override
 	public void pause () {
 		if (state == GAME_RUNNING) {
-			state = GAME_PAUSED;
-			pauseSystems();
+			//state = GAME_PAUSED;
+			//pauseSystems();
 		}
 	}
 }

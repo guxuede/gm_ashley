@@ -12,7 +12,7 @@ public class ServerOptLoop implements Runnable {
     private boolean isFirst = true;
     private static AtomicLong currentFrame = new AtomicLong(0);
     private static List<NetOptQueen.NetOpt> currentFrameOpt = new ArrayList<NetOptQueen.NetOpt>(10);
-    private int[] players = new int[]{0};
+    private int[] players = new int[]{0,1};
 
     @Override
     public void run() {
