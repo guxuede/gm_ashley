@@ -114,7 +114,7 @@ public class CollisionSystem extends EntitySystem {
 							bobSystem.hitPlatform(bob);
 							listener.jump();
 							if (rand.nextFloat() > 0.5f) {
-								platformSystem.pulverize(platform);
+								//platformSystem.pulverize(platform);
 							}
 							
 							break;
