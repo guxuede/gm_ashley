@@ -62,10 +62,10 @@ public class World {
         MathUtils.random = new RandomXS128(1234567L,1234567L);
     }
 	
-	public void create() {
-        Entity bob1 = createBob(0,0);
-		Entity bob = createBob(1,0);
-		createCamera(bob);
+	public void create(int mainPlayerId) {
+        Entity bob0 = createBob(0,0);
+		Entity bob1 = createBob(1,0);
+		createCamera(mainPlayerId==0?bob0:bob1);
 		createBackground();
 		generateLevel();
 

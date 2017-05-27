@@ -3,7 +3,6 @@ package com.siondream.superjumper.net;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
-import io.netty.handler.codec.FixedLengthFrameDecoder;
 
 import java.util.List;
 
@@ -30,7 +29,7 @@ public class OptFrameDecoder extends ByteToMessageDecoder {
             int playId = in.readInt();
             long frame = in.readLong();
             float x = in.readFloat();
-            NetOptQueen.NetOpt opt = new NetOptQueen.NetOpt();
+            ClientNetOptLoop.NetOpt opt = new ClientNetOptLoop.NetOpt();
             opt.playerId = playId;
             opt.frame = frame;
             opt.x = x;

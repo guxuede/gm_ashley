@@ -18,17 +18,9 @@ package com.siondream.superjumper.net;
 import com.siondream.superjumper.GameScreen;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.util.Iterator;
 
 /**
  */
@@ -57,9 +49,11 @@ public final class SecureChatClient extends Thread {
             // Start the connection attempt.
             Channel ch = b.connect(HOST, PORT).sync().channel();
             while (goRun && gameScreen.state!=-1) {
-                synchronized (NetOptQueen.outcomeFrameOptList) {
-                    while (!NetOptQueen.outcomeFrameOptList.isEmpty()) {
-                        NetOptQueen.NetOpt opt = NetOptQueen.outcomeFrameOptList.poll();
+                Thread.sleep(100);
+                synchronized (ClientNetOptLoop.outcomeFrameOptList) {
+                    while (!ClientNetOptLoop.outcomeFrameOptList.isEmpty()) {
+                        ClientNetOptLoop.NetOpt opt = ClientNetOptLoop.outcomeFrameOptList.poll();
+                        //System.out.println("write:"+opt);
                         ch.writeAndFlush(opt);
                     }
                 }

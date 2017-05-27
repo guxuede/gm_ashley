@@ -21,9 +21,6 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -55,7 +52,7 @@ public final class SecureChatClient1 {
                 if (line == null) {
                     break;
                 }
-                NetOptQueen.NetOpt opt = new NetOptQueen.NetOpt();
+                ClientNetOptLoop.NetOpt opt = new ClientNetOptLoop.NetOpt();
                 lastWriteFuture = ch.writeAndFlush(opt);
                 // Sends the received line to the server.
 //                lastWriteFuture = ch.writeAndFlush(line + "\r\n");

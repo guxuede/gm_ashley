@@ -28,7 +28,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.siondream.superjumper.components.BobComponent;
 import com.siondream.superjumper.components.MovementComponent;
-import com.siondream.superjumper.net.NetOptQueen;
+import com.siondream.superjumper.net.ClientNetOptLoop;
 import com.siondream.superjumper.net.SecureChatClient;
 import com.siondream.superjumper.systems.AnimationSystem;
 import com.siondream.superjumper.systems.BackgroundSystem;
@@ -45,7 +45,6 @@ import com.siondream.superjumper.systems.SquirrelSystem;
 import com.siondream.superjumper.systems.StateSystem;
 
 import java.util.List;
-import java.util.Map;
 
 public class GameScreen extends ScreenAdapter {
 	static final int GAME_READY = 0;
@@ -71,11 +70,11 @@ public class GameScreen extends ScreenAdapter {
 	
 	public int state;
 
-    private int playerId = 1;
+    private int playerId = 0;
 
-	public GameScreen (SuperJumper game) {
+	public GameScreen (SuperJumper game ,int playerId) {
 		this.game = game;
-
+        this.playerId = playerId;
 		state = GAME_READY;
 		guiCam = new OrthographicCamera(320, 480);
 		guiCam.position.set(320 / 2, 480 / 2, 0);
@@ -121,7 +120,7 @@ public class GameScreen extends ScreenAdapter {
 
 		engine.getSystem(BackgroundSystem.class).setCamera(engine.getSystem(RenderingSystem.class).getCamera());
 
-		world.create();
+		world.create(playerId);
 
 		pauseBounds = new Rectangle(320 - 64, 480 - 64, 64, 64);
 		resumeBounds = new Rectangle(160 - 96, 240, 192, 36);
@@ -309,30 +308,6 @@ public class GameScreen extends ScreenAdapter {
 		engine.getSystem(CollisionSystem.class).setProcessing(true);
 	}
 
-//    private double accumulator;
-//    private double currentTime;
-//    private float step =10.0f /60.0f;
-//    @Override
-//	public void render (float delta) {
-//        if ( delta > 0.25f ) delta = 0.25f;	  // note: max frame time to avoid spiral of death
-//        double newTime = TimeUtils.millis() /1000.0;
-//        double frameTime = Math.min(newTime - currentTime,0.25);
-//        float deltaTime = (float)frameTime;
-//        currentTime = newTime;
-//        accumulator += frameTime;
-//        engine.getSystem(RenderingSystem.class).setProcessing(false);
-//        while (accumulator >= step) {
-//            accumulator -= step;
-//            engine.update(deltaTime);
-//        }
-//        engine.getSystem(RenderingSystem.class).setProcessing(true);
-//        engine.update(deltaTime);
-//        updateUI(deltaTime);
-//        drawUI();
-//    }
-
-
-
     private final float TIME_STEP = 0.0133f;	// logic updates approx. @ 75 hz
     float accumulator = 0.0f;
     @Override
@@ -352,47 +327,35 @@ public class GameScreen extends ScreenAdapter {
         updateUI(delta);
         drawUI();
     }
-    /**
-     * 查看命令队列，如果不为空
-     *      得到当前logicUpdateCount之前的命令，
-     *      得到現在命令隊列中所有logicUpdateCount的命令。
-     * 如果有則執行
-     * 没有则等待
-     */
-    private long updateCount =0;
-    private long logicUpdated = 0;
+
+    private long totalClientUpdated =0;
+    private long totalServerUpdated = 0;
     private void updateLogic(){
-        if(updateCount % 20 == 0){
-            System.out.println("process net:"+ updateCount+","+logicUpdated);
-            {//BeforeFrameOpt
-                Map<Long, List<NetOptQueen.NetOpt>> optsMap = NetOptQueen.readAllAfterFrameOpt(logicUpdated);
+        if(totalClientUpdated % 6 == 0){
+            //System.out.println("process net:"+ totalClientUpdated+","+totalServerUpdated);
+            {
+                List<ClientNetOptLoop.NetOpt> optsMap = ClientNetOptLoop.readCurrentFrameOpt(totalServerUpdated);
                 if(!optsMap.isEmpty()){
-                    for (Long frameIndex : optsMap.keySet()) {
-                        fastUpdate(optsMap, frameIndex);
-//                        while(logicUpdated < frameIndex){
-//                            logicUpdated++;
-//                            engine.update(TIME_STEP);
-//                        }
+                    for (ClientNetOptLoop.NetOpt netOpt : optsMap) {
+                        performPlayerNetOpt(netOpt);
                     }
-                    logicUpdated++;
+                    totalServerUpdated++;
                     processKeyEvent();
                 }else{
-                    System.out.println("wait server response");
+                    //System.out.println("wait server response");
                     return;
                 }
             }
         }
         engine.update(TIME_STEP);
-        updateCount ++ ;
+        totalClientUpdated++ ;
     }
 
-    private void fastUpdate(Map<Long, List<NetOptQueen.NetOpt>> optsMap, Long frameIndex) {
-        for(NetOptQueen.NetOpt opt:optsMap.get(frameIndex)){
-            for (Entity entity : engine.getSystem(BobSystem.class).getEntities()) {
-                if (opt.playerId == entity.getComponent(BobComponent.class).playId) {
-                    entity.getComponent(MovementComponent.class).accelX = opt.x;
-                    break;
-                }
+    private void performPlayerNetOpt(ClientNetOptLoop.NetOpt opt) {
+        for (Entity entity : engine.getSystem(BobSystem.class).getEntities()) {
+            if (opt.playerId == entity.getComponent(BobComponent.class).playId) {
+                entity.getComponent(MovementComponent.class).accelX = opt.x;
+                break;
             }
         }
     }
@@ -414,7 +377,7 @@ public class GameScreen extends ScreenAdapter {
                 accelX = 0;
             }
         }
-        NetOptQueen.addOpt(playerId, logicUpdated,accelX);
+        ClientNetOptLoop.addOpt(playerId, totalServerUpdated,accelX);
     }
 
     private Entity getEntityByPlayId(int playerId){

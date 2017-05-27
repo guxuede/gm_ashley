@@ -50,7 +50,7 @@ public class MainMenuScreen extends ScreenAdapter {
 
 			if (playBounds.contains(touchPoint.x, touchPoint.y)) {
 				Assets.playSound(Assets.clickSound);
-				game.setScreen(new GameScreen(game));
+				game.setScreen(new GameScreen(game,1));
 				return;
 			}
 			if (highscoresBounds.contains(touchPoint.x, touchPoint.y)) {

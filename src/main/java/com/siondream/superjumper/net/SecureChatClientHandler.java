@@ -27,8 +27,8 @@ public class SecureChatClientHandler extends SimpleChannelInboundHandler<Object>
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
-        System.err.println(msg);
-        NetOptQueen.addIncomeFrameOpt((NetOptQueen.NetOpt) msg);
+        //System.err.println("channelRead0"+msg);
+        ClientNetOptLoop.addIncomeFrameOpt((ClientNetOptLoop.NetOpt) msg);
     }
 
     @Override
@@ -43,6 +43,9 @@ public class SecureChatClientHandler extends SimpleChannelInboundHandler<Object>
                 System.out.println("all idle");
         }
     }
+
+
+
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         cause.printStackTrace();

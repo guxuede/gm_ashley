@@ -40,7 +40,7 @@ public final class SecureChatServer {
                     .channel(NioServerSocketChannel.class)
                     .handler(new LoggingHandler(LogLevel.INFO))
                     .childHandler(new SecureChatServerInitializer());
-            workerGroup.scheduleAtFixedRate(new ServerOptLoop(),100000000,100000000, TimeUnit.NANOSECONDS);
+            workerGroup.scheduleAtFixedRate(new ServerNetOptLoop(),100000000,100000000, TimeUnit.NANOSECONDS);
             b.bind(PORT).sync().channel().closeFuture().sync();
         } finally {
             bossGroup.shutdownGracefully();

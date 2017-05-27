@@ -7,23 +7,27 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * Created by guxuede on 2017/5/23 .
  */
-public class ServerOptLoop implements Runnable {
+public class ServerNetOptLoop implements Runnable {
 
     private boolean isFirst = true;
     private static AtomicLong currentFrame = new AtomicLong(0);
-    private static List<NetOptQueen.NetOpt> currentFrameOpt = new ArrayList<NetOptQueen.NetOpt>(10);
-    private int[] players = new int[]{0,1};
+    private static List<ClientNetOptLoop.NetOpt> currentFrameOpt = new ArrayList<ClientNetOptLoop.NetOpt>(10);
+    public static final int[] players = new int[]{0,1};
+
+    private boolean isWait = false;
 
     @Override
     public void run() {
-        System.out.println("run11.");
         boolean allPlayerOkInCurrentFrame = true;
         if(isFirst){
             if(!SecureChatServerHandler.channels.isEmpty() && SecureChatServerHandler.channels.size() == players.length){
-                NetOptQueen.NetOpt startOpt = new NetOptQueen.NetOpt();
-                startOpt.frame = 0L;
-                startOpt.playerId = -1;
-                SecureChatServerHandler.channels.writeAndFlush(startOpt);
+                for(int p:players){
+                    ClientNetOptLoop.NetOpt startOpt = new ClientNetOptLoop.NetOpt();
+                    startOpt.frame = 0L;
+                    startOpt.x = 0;
+                    startOpt.playerId = p;
+                    SecureChatServerHandler.channels.writeAndFlush(startOpt);
+                }
                 currentFrame.incrementAndGet();
                 isFirst = false;
                 return;
@@ -34,12 +38,16 @@ public class ServerOptLoop implements Runnable {
         }
         for(int p:players){
             if(!checkHasPlayersOpt(p)){
-                System.out.println("wait for player:"+p);
+                if(!isWait){
+                    System.out.println("wait for player:"+p);
+                    isWait = true;
+                }
                 allPlayerOkInCurrentFrame = false;
             }
         }
         if(allPlayerOkInCurrentFrame){
-            for(NetOptQueen.NetOpt opt:currentFrameOpt){
+            isWait = false;
+            for(ClientNetOptLoop.NetOpt opt:currentFrameOpt){
                 SecureChatServerHandler.channels.writeAndFlush(opt);
             }
             currentFrame.incrementAndGet();
@@ -47,7 +55,7 @@ public class ServerOptLoop implements Runnable {
         }
     }
 
-    public static boolean addClientOpt(NetOptQueen.NetOpt opt){
+    public static boolean addClientOpt(ClientNetOptLoop.NetOpt opt){
         if(opt.frame == currentFrame.get()){
             if(!checkHasPlayersOpt(opt.playerId)){
                 currentFrameOpt.add(opt);
@@ -61,7 +69,7 @@ public class ServerOptLoop implements Runnable {
     }
 
     public static boolean checkHasPlayersOpt(int player){
-        for(NetOptQueen.NetOpt opt:currentFrameOpt){
+        for(ClientNetOptLoop.NetOpt opt:currentFrameOpt){
             if(opt.playerId == player){
                 return true;
             }

@@ -15,21 +15,15 @@
  */
 package com.siondream.superjumper.net;
 
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
-import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.GlobalEventExecutor;
 
-import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -53,12 +47,8 @@ public class SecureChatServerHandler extends SimpleChannelInboundHandler<Object>
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
-        System.out.println("ctx = [" + ctx + "], msg = [" + msg + "]");
-        // Send the received message to all channels but the current one.
-//        for (Channel c : channels) {
-//            c.writeAndFlush(msg);
-//        }
-        ServerOptLoop.addClientOpt((NetOptQueen.NetOpt) msg);
+        //System.out.println("ctx = [" + ctx + "], msg = [" + msg + "]");
+        ServerNetOptLoop.addClientOpt((ClientNetOptLoop.NetOpt) msg);
     }
 
     @Override
