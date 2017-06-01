@@ -24,7 +24,9 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.siondream.superjumper.components.BobComponent;
 import com.siondream.superjumper.components.MovementComponent;
@@ -339,6 +341,8 @@ public class GameScreen extends ScreenAdapter {
                     for (ClientNetOptLoop.NetOpt netOpt : optsMap) {
                         performPlayerNetOpt(netOpt);
                     }
+                    float dst = Vector2.dst(1.243f+totalServerUpdated,1.234f+totalServerUpdated,1.34565f+totalServerUpdated,1.5776f+totalServerUpdated);
+                    System.out.println("totalServerUpdated:"+totalServerUpdated+":::"+ dst);
                     totalServerUpdated++;
                     processKeyEvent();
                 }else{
