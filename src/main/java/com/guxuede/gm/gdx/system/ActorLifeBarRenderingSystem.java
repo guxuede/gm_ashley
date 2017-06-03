@@ -21,10 +21,10 @@ public class ActorLifeBarRenderingSystem extends IteratingSystem {
     SpriteBatch batch;
     private ShapeRenderer shapes;
 
-    public ActorLifeBarRenderingSystem(int priority) {
+    public ActorLifeBarRenderingSystem(int priority,SpriteBatch spriteBatch) {
         super(family);
         this.priority = priority;
-        batch = new SpriteBatch();
+        batch = spriteBatch;
         shapes = new ShapeRenderer();
         shapes.setAutoShapeType(true);
     }

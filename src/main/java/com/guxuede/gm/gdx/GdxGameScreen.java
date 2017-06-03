@@ -6,6 +6,7 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.guxuede.gm.gdx.component.*;
 import com.guxuede.gm.gdx.system.*;
 import com.guxuede.gm.gdx.system.CameraSystem;
@@ -16,25 +17,26 @@ import com.guxuede.gm.gdx.system.MovementSystem;
  */
 public class GdxGameScreen extends ScreenAdapter {
 
+    SpriteBatch spriteBatch;
     PooledEngine engine;
 
     public GdxGameScreen(){
+        spriteBatch = new SpriteBatch();
         engine = new PooledEngine();
         engine.addSystem(new ActorAnimationSystem());
         engine.addSystem(new ActorStateActorAnimationSystem());
         engine.addSystem(new AnimationSystem());
-        engine.addSystem(new CameraSystem());
         engine.addSystem(new ActorStateSystem());
-        StageSystem stageSystem = new StageSystem();
-        engine.addSystem(stageSystem);
-        engine.addSystem(new PresentableRenderingSystem(300));
         engine.addSystem(new MovementSystem());
-        engine.addSystem(new ActorShadowRenderingSystem(200));
-        engine.addSystem(new ActorLifeBarRenderingSystem(400));
-        //createActor();
-        //createPresentableComponentEntity();
-        //createPresentableComponentAnimationComponentEntity();
-        //createPresentableComponentAnimationComponentActorAnimationComponentEntity();
+        engine.addSystem( new StageSystem());
+        engine.addSystem(new CameraSystem(spriteBatch));
+        engine.addSystem(new PresentableRenderingSystem(300,spriteBatch));
+        engine.addSystem(new ActorShadowRenderingSystem(200,spriteBatch));
+        engine.addSystem(new ActorLifeBarRenderingSystem(400,spriteBatch));
+        createActor();
+        createPresentableComponentEntity();
+        createPresentableComponentAnimationComponentEntity();
+        createPresentableComponentAnimationComponentActorAnimationComponentEntity();
         createPresentableComponentAnimationComponentActorAnimationComponentActorStateComponentEntity();
     }
 
@@ -121,6 +123,11 @@ public class GdxGameScreen extends ScreenAdapter {
         ActorStateComponent actorStateComponent = engine.createComponent(ActorStateComponent.class);
         ActorComponent gdxActorComponent = engine.createComponent(ActorComponent.class);
         ActorShadowComponent actorShadowComponent = engine.createComponent(ActorShadowComponent.class);
+
+        CameraComponent cameraComponent = engine.createComponent(CameraComponent.class);
+        cameraComponent.camera = new MovebleOrthographicCamera();
+        cameraComponent.target = entity;
+        entity.add(cameraComponent);
 
         entity.add(animationHolder);
         entity.add(animationComponent);

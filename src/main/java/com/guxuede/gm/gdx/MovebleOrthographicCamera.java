@@ -10,6 +10,7 @@ public class MovebleOrthographicCamera extends OrthographicCamera {
 	private float speed = 5.0f;
 	
 	public MovebleOrthographicCamera() {
+        this(Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
 	}
 	
 	public MovebleOrthographicCamera(float width, float height) {
@@ -18,13 +19,13 @@ public class MovebleOrthographicCamera extends OrthographicCamera {
 
 	@Override
 	public void update() {
-		if(Gdx.input.isKeyPressed(Keys.UP)){
+		if(Gdx.input.isKeyPressed(Keys.PAGE_UP)){
 			this.translate(0, speed);
-		}else if(Gdx.input.isKeyPressed(Keys.DOWN)){
+		}else if(Gdx.input.isKeyPressed(Keys.PAGE_DOWN)){
 			this.translate(0, -speed);
-		}else if(Gdx.input.isKeyPressed(Keys.RIGHT)){
+		}else if(Gdx.input.isKeyPressed(Keys.HOME)){
 			this.translate(speed, 0);
-		}else if(Gdx.input.isKeyPressed(Keys.LEFT)){
+		}else if(Gdx.input.isKeyPressed(Keys.END)){
 			this.translate(-speed, 0);
 		} 
 		super.update();

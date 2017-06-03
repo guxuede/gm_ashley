@@ -17,9 +17,9 @@ public class ActorShadowRenderingSystem extends IteratingSystem {
 
     SpriteBatch spriteBatch;
 
-    public ActorShadowRenderingSystem(int priority){
+    public ActorShadowRenderingSystem(int priority,SpriteBatch spriteBatch){
         super(family);
-        spriteBatch = new SpriteBatch();
+        this.spriteBatch = spriteBatch;
         this.priority = priority;
     }
 

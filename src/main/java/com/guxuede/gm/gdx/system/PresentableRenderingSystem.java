@@ -22,14 +22,14 @@ public class PresentableRenderingSystem extends IteratingSystem {
     private static final Comparator<PresentableComponent> comparator = new Comparator<PresentableComponent>() {
         @Override
         public int compare(PresentableComponent entityA, PresentableComponent entityB) {
-            return (int) Math.signum(entityA.zIndex -entityB.zIndex);
+            return (int) Math.signum(entityA.zIndex - entityB.zIndex);
         }
     };
 
-    public PresentableRenderingSystem(int priority) {
+    public PresentableRenderingSystem(int priority, SpriteBatch spriteBatch) {
         super(family);
         this.priority = priority;
-        batch = new SpriteBatch();
+        batch = spriteBatch;
         renderQueue = new Array<PresentableComponent>();
     }
 
@@ -48,7 +48,7 @@ public class PresentableRenderingSystem extends IteratingSystem {
 
     @Override
     protected void processEntity(Entity entity, float deltaTime) {
-        renderQueue.add( Mappers.presentableCM.get(entity));
+        renderQueue.add(Mappers.presentableCM.get(entity));
     }
 
     protected void renderEntity(PresentableComponent presentableComponent, float deltaTime) {
