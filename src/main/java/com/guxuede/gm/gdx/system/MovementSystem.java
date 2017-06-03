@@ -46,7 +46,7 @@ public class MovementSystem extends IteratingSystem {
         if (actorStateComponent.isMoving){
             actorStateComponent.degrees = tmp.angle();
             actorStateComponent.direction = convertDegreesToDirection(actorStateComponent.degrees);
-            System.out.println("degrees = [" + actorStateComponent.degrees + "], direction = [" + actorStateComponent.direction + "]");
+            //System.out.println("degrees = [" + actorStateComponent.degrees + "], direction = [" + actorStateComponent.direction + "]");
         }
     }
 

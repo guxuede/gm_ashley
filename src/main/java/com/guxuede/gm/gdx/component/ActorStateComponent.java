@@ -38,4 +38,5 @@ public class ActorStateComponent implements Component{
     public final Vector2 acceleration = new Vector2();//加速度，要有加速度才能有速度
     public final Vector2 position = new Vector2();
 
+
 }

@@ -7,6 +7,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.guxuede.gm.gdx.actions.DelayAction;
+import com.guxuede.gm.gdx.actions.SequenceAction;
+import com.guxuede.gm.gdx.actions.movement.BlinkAction;
+import com.guxuede.gm.gdx.actions.movement.MoveAction;
 import com.guxuede.gm.gdx.component.*;
 import com.guxuede.gm.gdx.system.*;
 import com.guxuede.gm.gdx.system.CameraSystem;
@@ -25,6 +29,7 @@ public class GdxGameScreen extends ScreenAdapter {
         engine = new PooledEngine();
         engine.addSystem(new ActorAnimationSystem());
         engine.addSystem(new ActorStateActorAnimationSystem());
+        engine.addSystem(new ActionsSystem());
         engine.addSystem(new AnimationSystem());
         engine.addSystem(new ActorStateSystem());
         engine.addSystem(new MovementSystem());
@@ -105,6 +110,10 @@ public class GdxGameScreen extends ScreenAdapter {
         AnimationComponent animationComponent = engine.createComponent(AnimationComponent.class);
         PresentableComponent presentableComponent = engine.createComponent(PresentableComponent.class);
 
+        ActionsComponent actionsComponent = engine.createComponent(ActionsComponent.class);
+        actionsComponent.addAction(entity, new SequenceAction(new DelayAction(2),new BlinkAction()));
+        entity.add(actionsComponent);
+
         entity.add(actorStateComponent);
         entity.add(actorAnimationComponent);
         entity.add(animationComponent);
@@ -125,7 +134,7 @@ public class GdxGameScreen extends ScreenAdapter {
         ActorShadowComponent actorShadowComponent = engine.createComponent(ActorShadowComponent.class);
 
         CameraComponent cameraComponent = engine.createComponent(CameraComponent.class);
-        cameraComponent.camera = new MovebleOrthographicCamera();
+        cameraComponent.camera = new MovableOrthographicCamera();
         cameraComponent.target = entity;
         entity.add(cameraComponent);
 

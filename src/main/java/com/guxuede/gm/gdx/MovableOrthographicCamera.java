@@ -5,15 +5,15 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 
 
-public class MovebleOrthographicCamera extends OrthographicCamera {
+public class MovableOrthographicCamera extends OrthographicCamera {
 
 	private float speed = 5.0f;
 	
-	public MovebleOrthographicCamera() {
+	public MovableOrthographicCamera() {
         this(Gdx.graphics.getWidth(),Gdx.graphics.getHeight());
 	}
 	
-	public MovebleOrthographicCamera(float width, float height) {
+	public MovableOrthographicCamera(float width, float height) {
 		super(width, height);
 	}
 
