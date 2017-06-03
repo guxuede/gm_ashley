@@ -12,13 +12,4 @@ import com.guxuede.gm.gdx.Mappers;
  */
 public class ActorComponent extends Actor implements Component {
 
-    @Override
-    public void draw(Batch batch, float parentAlpha) {
-        Entity entity = (Entity) this.getUserObject();
-        TextureComponent textureComponent = Mappers.textureCM.get(entity);
-        TextureRegion textureRegion = textureComponent.region;
-        if (textureRegion != null) {
-            batch.draw(textureRegion, getX(), getY());
-        }
-    }
 }

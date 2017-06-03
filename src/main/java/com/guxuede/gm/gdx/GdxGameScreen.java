@@ -8,6 +8,8 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.ScreenAdapter;
 import com.guxuede.gm.gdx.component.*;
 import com.guxuede.gm.gdx.system.*;
+import com.guxuede.gm.gdx.system.CameraSystem;
+import com.guxuede.gm.gdx.system.MovementSystem;
 
 /**
  * Created by guxuede on 2017/5/30 .
@@ -18,14 +20,22 @@ public class GdxGameScreen extends ScreenAdapter {
 
     public GdxGameScreen(){
         engine = new PooledEngine();
+        engine.addSystem(new ActorAnimationSystem());
+        engine.addSystem(new ActorStateActorAnimationSystem());
         engine.addSystem(new AnimationSystem());
         engine.addSystem(new CameraSystem());
+        engine.addSystem(new ActorStateSystem());
         StageSystem stageSystem = new StageSystem();
         engine.addSystem(stageSystem);
-        engine.addSystem(new StageRenderingSystem(300,stageSystem.getStage()));
+        engine.addSystem(new PresentableRenderingSystem(300));
         engine.addSystem(new MovementSystem());
         engine.addSystem(new ActorShadowRenderingSystem(200));
-        createActor();
+        engine.addSystem(new ActorLifeBarRenderingSystem(400));
+        //createActor();
+        //createPresentableComponentEntity();
+        //createPresentableComponentAnimationComponentEntity();
+        //createPresentableComponentAnimationComponentActorAnimationComponentEntity();
+        createPresentableComponentAnimationComponentActorAnimationComponentActorStateComponentEntity();
     }
 
     @Override
@@ -34,18 +44,89 @@ public class GdxGameScreen extends ScreenAdapter {
         processKeyEvent();
     }
 
-    private Entity createActor() {
+    //测试只有一个PresentableComponent 时可以画出静态图片
+    private Entity createPresentableComponentEntity() {
+        Entity entity = engine.createEntity();
+        PresentableComponent presentableComponent = engine.createComponent(PresentableComponent.class);
+        presentableComponent.renderPosition.set(100,100);
+        presentableComponent.region = ResourceManager.getTextureRegion("Aquatic");
+        presentableComponent.zIndex = -1;
+
+        entity.add(presentableComponent);
+        engine.addEntity(entity);
+        return entity;
+    }
+    //测试只有一个PresentableComponent+一个AnimationComponent时可以画出动态动画
+    private Entity createPresentableComponentAnimationComponentEntity() {
         Entity entity = engine.createEntity();
         AnimationComponent animationComponent = engine.createComponent(AnimationComponent.class);
-        animationComponent.animationHolder = ResourceManager.getAnimationHolder("Undead");
+        animationComponent.animation = ResourceManager.getAnimationHolder("Undead").getAnimation(AnimationHolder.WALK_DOWN_ANIMATION);
+        animationComponent.animationPosition.set(20,20);
+        PresentableComponent presentableComponent = engine.createComponent(PresentableComponent.class);
+
+        entity.add(animationComponent);
+        entity.add(presentableComponent);
+        engine.addEntity(entity);
+        return entity;
+    }
+    //测试只有一个PresentableComponent+一个AnimationComponent+一个ActorAnimationComponent时可以画出角色状态动态动画
+    private Entity createPresentableComponentAnimationComponentActorAnimationComponentEntity() {
+        Entity entity = engine.createEntity();
+        ActorAnimationComponent actorAnimationComponent = engine.createComponent(ActorAnimationComponent.class);
+        actorAnimationComponent.animationHolder = ResourceManager.getAnimationHolder("Undead");
+        actorAnimationComponent.isMoving = true;
+        actorAnimationComponent.direction = ActorAnimationComponent.LEFT;
+        actorAnimationComponent.animationPosition.set(30,30);
+
+        AnimationComponent animationComponent = engine.createComponent(AnimationComponent.class);
+        PresentableComponent presentableComponent = engine.createComponent(PresentableComponent.class);
+
+        entity.add(actorAnimationComponent);
+        entity.add(animationComponent);
+        entity.add(presentableComponent);
+        engine.addEntity(entity);
+        return entity;
+    }
+
+    //测试只有一个PresentableComponent+一个AnimationComponent+一个ActorAnimationComponent+一个ActorStateComponent时可以画出以一定速度移动地角色状态动态动画
+    private Entity createPresentableComponentAnimationComponentActorAnimationComponentActorStateComponentEntity() {
+        Entity entity = engine.createEntity();
+        ActorStateComponent actorStateComponent = engine.createComponent(ActorStateComponent.class);
+        actorStateComponent.isMoving = true;
+        actorStateComponent.direction = ActorAnimationComponent.RIGHT;
+        actorStateComponent.position.set(50,50);
+        actorStateComponent.velocity.set(5,5);
+        actorStateComponent.acceleration.set(10,10);
+        ActorAnimationComponent actorAnimationComponent = engine.createComponent(ActorAnimationComponent.class);
+        actorAnimationComponent.animationHolder = ResourceManager.getAnimationHolder("Undead");
+
+        AnimationComponent animationComponent = engine.createComponent(AnimationComponent.class);
+        PresentableComponent presentableComponent = engine.createComponent(PresentableComponent.class);
+
+        entity.add(actorStateComponent);
+        entity.add(actorAnimationComponent);
+        entity.add(animationComponent);
+        entity.add(presentableComponent);
+        engine.addEntity(entity);
+        return entity;
+    }
+
+    private Entity createActor() {
+        Entity entity = engine.createEntity();
+        ActorAnimationComponent animationHolder = engine.createComponent(ActorAnimationComponent.class);
+        animationHolder.animationHolder = ResourceManager.getAnimationHolder("Undead");
+        AnimationComponent animationComponent = engine.createComponent(AnimationComponent.class);
+        PresentableComponent presentableComponent = engine.createComponent(PresentableComponent.class);
+
         ActorStateComponent actorStateComponent = engine.createComponent(ActorStateComponent.class);
         ActorComponent gdxActorComponent = engine.createComponent(ActorComponent.class);
-        TextureComponent textureComponent = engine.createComponent(TextureComponent.class);
         ActorShadowComponent actorShadowComponent = engine.createComponent(ActorShadowComponent.class);
+
+        entity.add(animationHolder);
         entity.add(animationComponent);
         entity.add(actorStateComponent);
         entity.add(gdxActorComponent);
-        entity.add(textureComponent);
+        entity.add(presentableComponent);
         entity.add(actorShadowComponent);
         engine.addEntity(entity);
         return entity;
@@ -79,6 +160,11 @@ public class GdxGameScreen extends ScreenAdapter {
                 accelY = 0;
             }
         }
-        engine.getEntities().first().getComponent(ActorStateComponent.class).acceleration.set(accelX*10,accelY*10);
+        Entity entity = engine.getEntities().first();
+        if(entity!=null){
+            ActorStateComponent actorStateComponent = entity.getComponent(ActorStateComponent.class);
+            if(actorStateComponent!=null)
+            actorStateComponent.acceleration.set(accelX*10,accelY*10);
+        }
     }
 }

@@ -22,34 +22,31 @@ import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.systems.IteratingSystem;
 import com.badlogic.gdx.math.Vector2;
 import com.guxuede.gm.gdx.component.ActorStateComponent;
-import com.guxuede.gm.gdx.component.ActorComponent;
 import com.siondream.superjumper.components.BobComponent;
 
-import static com.guxuede.gm.gdx.Mappers.actorCM;
 import static com.guxuede.gm.gdx.Mappers.actorStateCM;
 
 public class MovementSystem extends IteratingSystem {
     private Vector2 tmp = new Vector2();
 
     public MovementSystem() {
-        super(Family.all(ActorComponent.class, ActorStateComponent.class).get());
+        super(Family.all(ActorStateComponent.class).get());
     }
 
     @Override
     public void processEntity(Entity entity, float deltaTime) {
-        ActorStateComponent pos = actorStateCM.get(entity);
-        pos.velocity.x = -pos.acceleration.x / 10.0f * BobComponent.MOVE_VELOCITY;
-        pos.velocity.y = -pos.acceleration.y / 10.0f * BobComponent.MOVE_VELOCITY;
-        tmp.set(pos.velocity).scl(deltaTime);
+        ActorStateComponent actorStateComponent = actorStateCM.get(entity);
+        actorStateComponent.velocity.x = -actorStateComponent.acceleration.x / 10.0f * BobComponent.MOVE_VELOCITY;
+        actorStateComponent.velocity.y = -actorStateComponent.acceleration.y / 10.0f * BobComponent.MOVE_VELOCITY;
+        tmp.set(actorStateComponent.velocity).scl(deltaTime);
 
-        ActorComponent mov = actorCM.get(entity);
-        mov.setPosition(mov.getX() + tmp.x, mov.getY() + tmp.y);
+        actorStateComponent.position.add(tmp);
 
-        pos.isMoving = tmp.x != 0 || tmp.y!=0;
-        if (pos.isMoving){
-            pos.degrees = tmp.angle();
-            pos.direction = convertDegreesToDirection(pos.degrees);
-            System.out.println("degrees = [" + pos.degrees + "], direction = [" + pos.direction + "]");
+        actorStateComponent.isMoving = tmp.x != 0 || tmp.y!=0;
+        if (actorStateComponent.isMoving){
+            actorStateComponent.degrees = tmp.angle();
+            actorStateComponent.direction = convertDegreesToDirection(actorStateComponent.degrees);
+            System.out.println("degrees = [" + actorStateComponent.degrees + "], direction = [" + actorStateComponent.direction + "]");
         }
     }
 

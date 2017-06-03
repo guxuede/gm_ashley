@@ -11,6 +11,7 @@ public class Mappers {
     public static final ComponentMapper<AnimationComponent> animationCM = ComponentMapper.getFor(AnimationComponent.class);
     public static final ComponentMapper<CameraComponent> cameraCM = ComponentMapper.getFor(CameraComponent.class);
     public static final ComponentMapper<ActorComponent> actorCM = ComponentMapper.getFor(ActorComponent.class);
-    public static final ComponentMapper<TextureComponent> textureCM = ComponentMapper.getFor(TextureComponent.class);
+    public static final ComponentMapper<PresentableComponent> presentableCM = ComponentMapper.getFor(PresentableComponent.class);
+    public static final ComponentMapper<ActorAnimationComponent> animationHolderCM = ComponentMapper.getFor(ActorAnimationComponent.class);
 
 }
