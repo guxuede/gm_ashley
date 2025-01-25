@@ -24,6 +24,8 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 
 public class MainMenuScreen extends ScreenAdapter {
+	public static int playerId;
+
 	SuperJumper game;
 	OrthographicCamera guiCam;
 	Rectangle soundBounds;
@@ -50,7 +52,7 @@ public class MainMenuScreen extends ScreenAdapter {
 
 			if (playBounds.contains(touchPoint.x, touchPoint.y)) {
 				Assets.playSound(Assets.clickSound);
-				game.setScreen(new GameScreen(game,1));
+				game.setScreen(new GameScreen(game,playerId));
 				return;
 			}
 			if (highscoresBounds.contains(touchPoint.x, touchPoint.y)) {

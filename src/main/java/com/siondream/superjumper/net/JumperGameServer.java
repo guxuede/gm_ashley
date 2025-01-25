@@ -25,9 +25,9 @@ import io.netty.handler.logging.LoggingHandler;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Simple SSL chat server modified from {@link SecureChatServer}.
+ * Simple SSL chat server modified from {@link JumperGameServer}.
  */
-public final class SecureChatServer {
+public final class JumperGameServer {
 
     static final int PORT = Integer.parseInt(System.getProperty("port", "8992"));
 
