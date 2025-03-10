@@ -2,7 +2,6 @@ package com.siondream.superjumper;
 
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
-import com.siondream.superjumper.SuperJumper;
 
 //游玩方式, 先启动JumperGameServer,再启动DesktopLauncher 玩家1
 //DesktopLauncher1 玩家2

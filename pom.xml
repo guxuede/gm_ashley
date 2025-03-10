@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.guxuede</groupId>
-  <artifactId>gm_ashley</artifactId>
+  <artifactId>JumperGameNet</artifactId>
   <version>1.0-SNAPSHOT</version>
     <build>
         <plugins>
